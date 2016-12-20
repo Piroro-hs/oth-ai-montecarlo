@@ -1,0 +1,34 @@
+name:                montecarlo
+version:             0.1.0.0
+synopsis:            montecarlo
+description:         montecarlo
+license:             MIT
+build-type:          Simple
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Lib
+                     , Oth
+  build-depends:       base >= 4.7 && < 5
+                     , mwc-random
+                     , parallel-io
+                     , vector
+  default-language:    Haskell2010
+
+executable montecarlo-exe
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -O2
+  build-depends:       base
+                     , montecarlo
+  default-language:    Haskell2010
+
+test-suite montecarlo-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , montecarlo
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
