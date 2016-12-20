@@ -30,13 +30,13 @@ compute b t n = do
     maxIndex l = snd . maximum $ zip l [0 .. ]
 
 placeRandomlyToEndN :: Board -> Turn -> Int -> IO [Board]
-placeRandomlyToEndN b t n = createSystemRandom >>= \g -> replicateM n $ placeRandomlyToEnd g b t
+placeRandomlyToEndN b t n = createSystemRandom >>= replicateM n . placeRandomlyToEnd b t
   where
-    placeRandomlyToEnd gen board turn
+    placeRandomlyToEnd board turn g
         | null placeablesList && null (placeables board nt) = return board
-        | null placeablesList = placeRandomlyToEnd gen board nt
-        | otherwise = sample placeablesList >>= \i -> placeRandomlyToEnd gen (place board i nt) nt
+        | null placeablesList = placeRandomlyToEnd board nt g
+        | otherwise = sample placeablesList g >>= \i -> placeRandomlyToEnd (place board i nt) nt g
       where
         nt = opp turn
         placeablesList = placeables board turn
-        sample l = (l !!) <$> uniformR (0, length l - 1) gen
+    sample l g = (l !!) <$> uniformR (0, length l - 1) g
