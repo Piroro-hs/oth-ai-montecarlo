@@ -23,7 +23,6 @@ module Oth
 
 import           Data.Ix             (inRange)
 import qualified Data.Vector.Unboxed as VU
-import           System.Random.MWC
 
 type Dir = (Int, Int)
 type Index = (Int, Int)
@@ -68,7 +67,7 @@ initBoard :: Board
 initBoard = set (set (set (set board (4, 3) bl) (3, 4) bl) (4, 4) wh) (3, 3) wh
 
 place :: Board -> Index -> Piece -> Board
-place b i p = foldl (`place'`i) (set b i p) $ filter (placeableForDir b i p) dirs
+place b i p = foldl (`place'` i) (set b i p) $ filter (placeableForDir b i p) dirs
   where
     place' b (r, c) di@(dr, dc)
         | get b ni == p = b
@@ -85,11 +84,11 @@ placeableForDir b i t = placeable' False . tail . takeToEnd i
     takeToEnd index@(r, c) di@(dr, dc)
         | not (inRange (0, 7) r && inRange (0, 7) c) = []
         | otherwise = get b index : takeToEnd (r + dr, c + dc) di
+    placeable' _ [] = False
     placeable' f (p:xs)
         | p == t = f
         | p == opp t = placeable' True xs
         | otherwise = False
-    placeable' _ [] = False
 
 placeables :: Board -> Turn -> [Index]
-placeables b t = filter (($ t) . placeable b) $ map (\x -> (x `div` 8, x `mod` 8)) [0 .. 63]
+placeables b t = filter (($ t) . placeable b) $ map (\i -> (i `div` 8, i `mod` 8)) [0 .. 63]

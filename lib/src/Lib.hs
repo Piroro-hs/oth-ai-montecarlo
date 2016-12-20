@@ -4,7 +4,7 @@ module Lib
     ) where
 
 import           Control.Concurrent.ParallelIO.Global (parallel, stopGlobalPool)
-import           Control.Monad                        (forM, replicateM)
+import           Control.Monad                        (replicateM)
 import           System.Environment                   (getArgs)
 import           System.Random.MWC                    (createSystemRandom, uniformR)
 
@@ -20,23 +20,21 @@ parse = getArgs >>= \[b, t, n] -> return (fromList $ map parse' $ read b, parse'
 
 compute :: Board -> Turn -> Int -> IO Index
 compute b t n = do
-    g <- createSystemRandom
-    r <- parallel $ map (\i -> placeRandomlyToEndN (place b i t) (opp t) n) $ placeables b t
+    r <- parallel $ map (\i -> placeRandomlyToEndN (place b i t) (opp t) n) pl
     stopGlobalPool
-    return $
-        placeables b t !! maxIndex (map (length . filter ((>) <$> countF t <*> countF (opp t))) r)
+    return $ pl !! maxIndex (map (length . filter ((>) <$> (`count` t) <*> (`count` opp t))) r)
   where
-    countF = flip count
     maxIndex l = snd . maximum $ zip l [0 .. ]
+    pl = placeables b t
 
 placeRandomlyToEndN :: Board -> Turn -> Int -> IO [Board]
 placeRandomlyToEndN b t n = createSystemRandom >>= replicateM n . placeRandomlyToEnd b t
   where
     placeRandomlyToEnd board turn g
-        | null placeablesList && null (placeables board nt) = return board
-        | null placeablesList = placeRandomlyToEnd board nt g
-        | otherwise = sample placeablesList g >>= \i -> placeRandomlyToEnd (place board i nt) nt g
+        | null pl && null (placeables board nt) = return board
+        | null pl = placeRandomlyToEnd board nt g
+        | otherwise = sample pl g >>= \i -> placeRandomlyToEnd (place board i turn) nt g
       where
         nt = opp turn
-        placeablesList = placeables board turn
+        pl = placeables board turn
     sample l g = (l !!) <$> uniformR (0, length l - 1) g
