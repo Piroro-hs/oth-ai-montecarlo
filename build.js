@@ -1,5 +1,6 @@
 const {execSync: exec} = require('child_process');
 const {basename, parse} = require('path');
+
 const {copySync: copy, walkSync: walk} = require('fs-extra');
 const {sync: hasbin} = require('hasbin');
 
